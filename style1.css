@@ -1,0 +1,10 @@
+@media screen and (max-width: 600px) {
+    .container {
+        width: 90%;
+        padding: 10px;
+    }
+    .product-table th, .product-table td {
+        font-size: 12px;
+        padding: 5px;
+    }
+}

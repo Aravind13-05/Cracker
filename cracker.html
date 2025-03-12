@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shri Fireworks - Cracker Order</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('/Icon/cracker1.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #d9534f;
+        }
+        .logo {
+            width: 150px;
+            height: auto;
+        }
+        .product-list {
+            width: 100%;
+            margin: auto;
+            text-align: left;
+        }
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .product-table th, .product-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        .product-table th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+        .button-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-around;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-cancel {
+            background-color: #dc3545;
+        }
+        .btn-cancel:hover {
+            background-color: #b02a37;
+        }
+        .order-summary {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="style1.css">
+</head>
+<body>
+    <div class="container">
+        <img class="logo" src="/Icon/AK.png" alt="AK Fireworks Logo">
+        <h1>Shri Fireworks - Order Your Crackers Now!</h1>
+        <p>Get the best crackers at an amazing <strong>70% Discount</strong>!</p>
+        
+        <h2>Items</h2>
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Cost</th>
+                    <th>Quantity</th>
+                    <th>Total Price</th>
+                </tr>
+            </thead>
+            <tbody id="product-list"></tbody>
+        </table>
+        
+        <div class="button-container">
+            <button class="btn" onclick="checkout()">Checkout</button>
+            <button class="btn btn-cancel" onclick="clearCart()">Clear</button>
+        </div>
+
+        <div class="order-summary" id="order-summary-section" style="display: none;">
+            <h3>Order Summary</h3>
+            <table class="product-table">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Cost</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody id="order-summary"></tbody>
+            </table>
+            <h2>Grand Total: ₹<span id="grand-total">0</span></h2>
+            <h2>Discount (70%): ₹<span id="discount">0</span></h2>
+            <h2>Final Price: ₹<span id="final-price">0</span></h2>
+        </div>
+
+        <div class="button-container">
+            <button class="btn" onclick="proceedToBuy()">Proceed to Buy</button>
+            <button class="btn btn-cancel" onclick="cancelOrder()">Cancel</button>
+            <button class="btn" onclick="downloadPDF()">Download as PDF</button>
+        </div>
+    </div>
+    
+    <script>
+        function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    let doc = new jsPDF();
+
+    let logoUrl = "/Icon/AK.png";
+    let imgWidth = 55;
+    let imgHeight = 35;
+
+    doc.addImage(logoUrl, "JPEG", 80, 10, imgWidth, imgHeight,);
+    doc.setFont("helvetica", "bold",);
+    doc.setFontSize(18);
+    doc.text("AK Fireworks - Order Summary", 20, 70);
+
+    let y = 90;
+    doc.setFontSize(12);
+    doc.text("Product Name", 20, y);
+    doc.text("Cost", 90, y);
+    doc.text("Quantity", 120, y);
+    doc.text("Price", 160, y);
+    
+    y += 10;
+    document.querySelectorAll("#order-summary tr").forEach(row => {
+        let columns = row.children;
+        if (columns.length < 4) return;
+        doc.text(columns[0].innerText, 20, y);
+        doc.text("Rs." + columns[1].innerText.replace("₹", ""), 90, y);
+        doc.text(columns[2].innerText, 120, y);
+        doc.text("Rs." + columns[3].innerText.replace("₹", ""), 160, y);
+        y += 10;
+    });
+
+    y += 10;
+    doc.setFont("helvetica", "bold");
+    let pageWidth = doc.internal.pageSize.width - 20;
+    doc.text(`Grand Total: Rs. ${document.getElementById("grand-total").innerText.replace("₹", "")}`, pageWidth, y, { align: "right" });
+    y += 10;
+    doc.text(`Discount (70%): Rs. ${document.getElementById("discount").innerText.replace("₹", "")}`, pageWidth, y, { align: "right" });
+    y += 10;
+    doc.text(`Final Price: Rs. ${document.getElementById("final-price").innerText.replace("₹", "")}`, pageWidth, y, { align: "right" });
+
+    doc.save("Order_Summary.pdf");
+}
+        let products = [
+        { name: "Blaster's", isTitle: true },
+            { name: "Red Bijili (50pcs)", price: 100 },
+            { name: "Red Bijili (100pcs)", price: 180 },
+            { name: "Stripped Bijili (50pcs)", price: 120 },
+            { name: "Stripped Bijili (100pcs)", price: 200 },
+            { name: "2 3/4 Kuruvi", price: 36 },
+            { name: "3 1/2 Lakshmi", price: 75 },
+            { name: "4 Lakshmi", price: 100 },
+            { name: "4.5 Gold Lakshmi", price: 150 },
+            { name: "5 Mega Lakshmi", price: 225 },
+            { name: "6 Mega Lakshmi", price: 300 },
+        { name: "Bomb's", isTitle: true },    
+            { name: "Classic Green Bomb", price: 600 },
+            { name: "Classic Fails Bomb", price: 630 },
+            { name: "Animal Big Bomb", price: 950 },
+            { name: "Deluxe Animal Bomb", price: 1300 },
+            { name: "2 Sound Bomb", price: 200 },
+        { name: "Chakkar's", isTitle: true },
+            { name: "Ground Chakkar small", price: 125 },
+            { name: "Ground Chakkar Big", price: 175 },
+            { name: "Ground Chakkar Ashoka", price: 500 },
+            { name: "Ground Chakkar Special", price: 650 },
+            { name: "Ground Chakkar Deluxe", price: 880},
+        { name: "Special Chakkar's", isTitle: true },
+            { name: "Majestic Chakkar", price: 600},
+            { name: "Winner Special", price: 850},
+            { name: "Winner Deluxe", price: 975},
+            { name: "Spinner Level", price: 680},
+            { name: "Fortune Chakkar", price: 975 },
+        { name: "Flower pot's", isTitle: true },
+            { name: "Flower Pot Small", price: 200 },
+            { name: "Flower Pot Big", price: 325 },
+            { name: "Flower Pot Ashoka", price: 580 },
+            { name: "Flower Pot Special", price: 480 },
+            { name: "Flower Pot Deluxe(5pcs)", price: 910 },
+            { name: "Flower Pot Deluxe(10pcs)", price: 1500 },
+            { name: "Colour koti", price: 850 },
+            { name: "Colour koti XL", price: 1100 },
+            { name: "Jumbo Colour", price: 2450 },
+        { name: "Multi Sky Shots(Fancy)", isTitle: true },
+            { name: "12 Shot King Raider", price: 550 },
+            { name: "30 Shot Colour", price: 1750 },
+            { name: "45 Shot Colour", price: 2500 },
+            { name: "60 Shot Colour", price: 3500 },
+            { name: "120 Shot Colour", price: 7000},
+            { name: "240 Shot Colour", price: 14000},
+        { name: "Single Sky Shots(Fancy)", isTitle: true },
+        { name: "2 inch Gold Fancy(1 pcs)", isTitle: true },
+            { name: "Jery", price: 625 },
+            { name: "Mega Mind", price: 625 },
+            { name: "Busier", price: 625 },
+            { name: "Lorax", price: 625 },
+            { name: "War Craft", price: 625 },
+            { name: "Benz", price: 625 },
+            { name: "Blinky", price: 625 }, 
+        { name: "1 3/4 inch Gold Fancy(3 pcs)", isTitle: true },
+            { name: "Red Thunder", price: 1250 },
+            { name: "Green Garnet", price: 1250 },
+            { name: "Zooto Pia", price: 1250 },
+            { name: "Moon Scoop", price: 1250 },
+            { name: "Golden Falls", price: 1250 },
+            { name: "Twinz", price: 1250 }, 
+        { name: "3 inch Pearl Fancy Colour(1 pcs)", isTitle: true },
+            { name: "Hungergo", price: 1550 },
+            { name: "Exodus", price: 1550 },
+            { name: "Zumba", price: 1550 },
+            { name: "Sing Party", price: 1550 },
+            { name: "Hobbit", price: 1550 },
+            { name: "Hercules", price: 1550 },
+        { name: "3 1/4 inch Colour Fancy(1 pcs)", isTitle: true },
+            { name: "Facebook", price: 2500 },
+            { name: "What's Up", price: 2500 },
+            { name: "Skype", price: 2500 },
+            { name: "Twitter", price: 2500 },
+            { name: "Hike", price: 2500 },
+            { name: "Selfie", price: 2500 }, 
+        { name: "4 inch Super Colour Fancy(1 pcs)", isTitle: true },
+            { name: "Green Lanten", price: 3850 },
+            { name: "Red Tails", price: 3850 },
+            { name: "Angry Birds", price: 3850 },
+            { name: "Macows", price: 3850 },
+            { name: "Silver Sidney", price: 3850 },
+            { name: "Jaguar", price: 3850 },
+        { name: "Rocket", isTitle: true },
+            { name: "Small Rocket(10 pcs)", price: 250 },
+            { name: "Lunix Rocket(10 pcs)", price: 600 },
+            { name: "3 Sound Rocket", price: 750 },
+        { name: "Paper Bomb", isTitle: true },
+            { name: "1/4 kg", price: 210 },
+            { name: "1/4 kg Colour", price: 280 },
+            { name: "1/2 kg", price: 420 },
+            { name: "1/2 kg Colour", price: 500 },
+            { name: "1 kg", price: 840 },
+            { name: "1 kg Colour", price: 950 },
+            { name: "Money Bomb(2 pcs)", price: 1250 },
+
+        { name: "Colour Crackers", isTitle: true },
+            { name: "Crack jack(10 pcs)", price: 125 },
+            { name: "Maska Chaska(10 pcs)", price: 210 },
+            { name: "Super Five(5 pcs)", price: 600 },
+            { name: "Avenger(3 pcs)", price: 1300 },
+            { name: "Siren(5 pcs)", price: 1050 },
+            { name: "Rainbow Smoke(3 pcs)", price: 800 },
+            { name: "Peacock Small(1 pcs)", price: 950 },
+            { name: "Peacock Big(1 pcs)", price: 1800 },
+            { name: "Peacock Feather(5 pcs)", price: 550 },
+            { name: "Three Eye Peacock(1 pcs)", price: 800 },
+            { name: "Butterfly(10 pcs)", price: 350 },
+            { name: "Top Spin(5 pcs)", price: 400 },
+            { name: "Shower Colour(5 pcs)", price: 500 },
+            { name: "5 in 1(5 pcs)", price: 1600 },
+            { name: "Small Pencil(10 pcs)", price: 750 },
+            { name: "Pencil(5 pcs)", price: 750 },
+            { name: "Big Pencil(3 pcs)", price: 750 },
+            { name: "Helicopter(5 pcs)", price: 650 },
+            { name: "Tri Colour(5 pcs)", price: 1600 },
+            { name: "Photo Plus(5 pcs)", price: 350 },
+            { name: "Colour Rain(5 pcs)", price: 550 },
+            { name: "Golden Rain(5 pcs)", price: 550 },
+            { name: "Hal Light(5 pcs)", price: 450 },
+            { name: "Chota Fancy(1 pcs)", price: 270 },
+            { name: "7 Shot(5 pcs)", price: 270 },
+            { name: "Lollipop(5 pcs)", price: 1450 },
+                  
+        ];
+        
+        let productList = document.getElementById("product-list");
+        products.forEach(product => {
+            if (product.isTitle) {
+        productList.innerHTML += `
+            <tr>
+                <td colspan="4" style="background-color: #faf6f5 ; font-weight: bold; text-align: center;">${product.name}</td>
+            </tr>
+        `;
+    } else {
+            productList.innerHTML += `
+                <tr>
+                    <td>${product.name}</td>
+                    <td>₹${product.price}</td>
+                    <td><input type='number' id='qty-${product.name.replace(/\s+/g, "-")}' name='quantity' min='0' value='0' style='width: 50px; text-align: center;' onchange='updateTotal(this, ${product.price})'></td>
+                    <td class='total-price'>₹0</td>
+                </tr>`;
+            }
+        });
+
+        function updateTotal(input, price) {
+            let quantity = parseInt(input.value) || 0;
+            if (quantity < 0) {
+        input.value = 0;
+        quantity = 0;
+    }
+            let totalPriceCell = input.parentElement.nextElementSibling;
+            totalPriceCell.innerText = `₹${quantity * price}`;
+        }
+
+        function checkout() {
+    let orderSummary = document.getElementById("order-summary");
+    orderSummary.innerHTML = ""; // Clear previous summary
+
+    let grandTotal = 0;
+    let hasItems = false;
+
+    document.querySelectorAll(".product-table tbody tr").forEach(row => {
+        if (row.children.length < 4) return; // Skip title rows
+
+        let quantityInput = row.children[2].querySelector("input");
+        if (!quantityInput) return; // Skip if no input field exists
+
+        let quantity = parseInt(quantityInput.value) || 0;
+        if (quantity > 0) {
+            hasItems = true;
+            let name = row.children[0].innerText;
+            let costPerItem = parseInt(row.children[1].innerText.replace('₹', '').trim()) || 0; // Get cost
+            let totalPrice = costPerItem * quantity; // Calculate total price
+
+            orderSummary.innerHTML += `<tr>
+                <td>${name}</td>
+                <td>${costPerItem}</td>
+                <td>${quantity}</td>
+                <td>₹${totalPrice}</td>
+            </tr>`;
+
+            grandTotal += totalPrice;
+        }
+    });
+
+    if (!hasItems) {
+        alert("Please select at least one item before proceeding to checkout.");
+        return;
+    }
+
+    let discount = grandTotal * 0.7;
+    let finalPrice = grandTotal - discount;
+
+    document.getElementById("grand-total").innerText = `₹${grandTotal.toFixed(2)}`;
+    document.getElementById("discount").innerText = `₹${discount.toFixed(2)}`;
+    document.getElementById("final-price").innerText = `₹${finalPrice.toFixed(2)}`;
+    document.getElementById("order-summary-section").style.display = "block"; // Show summary
+}
+
+function clearCart() {
+    document.querySelectorAll(".product-table tbody tr").forEach(row => {
+        if (row.children.length < 4) return;
+        let quantityInput = row.children[2].querySelector("input");
+        if (quantityInput) {
+            quantityInput.value = 0;
+        }
+        let totalPriceCell = row.children[3];
+        if (totalPriceCell) {
+            totalPriceCell.innerText = "₹0";
+        }
+    });
+    document.getElementById("order-summary-section").style.display = "none";
+    document.getElementById("grand-total").innerText = "₹0";
+    document.getElementById("discount").innerText = "₹0";
+    document.getElementById("final-price").innerText = "₹0";
+}
+    </script>
+</body>
+</html>
